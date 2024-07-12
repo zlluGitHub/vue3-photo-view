@@ -1,5 +1,5 @@
-import { EdgeTypeEnum } from '../types';
-
+import { EdgeTypeEnum } from "../types";
+// import { inject } from "vue";
 /**
  * 获取图片拖拽到边缘需要的值
  */
@@ -9,23 +9,34 @@ export function getEdgeInfo({
   scale,
   rotate,
 }: {
-  width: number,
-  height: number,
-  scale: number,
-  rotate: number
+  width: number;
+  height: number;
+  scale: number;
+  rotate: number;
 }): {
-  edgeLeft: number,
-  edgeRight: number,
-  edgeTop: number,
-  edgeBottom: number,
+  edgeLeft: number;
+  edgeRight: number;
+  edgeTop: number;
+  edgeBottom: number;
 } {
+
+  const win: any = window;
+  const dom: any = document.querySelector(win?.$photo_mount_el);
+
   // 如果图片不是水平，则调换宽高
   const isVertical = rotate % 180 !== 0;
   if (isVertical) {
     [width, height] = [height, width];
   }
 
-  const { innerWidth, innerHeight } = window;
+  let { innerWidth, innerHeight } = window;
+
+  if (dom) {
+    innerWidth = dom.offsetWidth;
+    innerHeight = dom.offsetHeight;
+  }
+  // console.log(3,dom,dom.offsetWidth,dom.offsetHeight);
+
   const currentWidth = width * scale;
   const currentHeight = height * scale;
 
@@ -66,12 +77,12 @@ export function getEdgeTypes({
   x,
   y,
 }: {
-  width: number,
-  height: number,
-  scale: number,
-  rotate: number,
-  x: number,
-  y: number,
+  width: number;
+  height: number;
+  scale: number;
+  rotate: number;
+  x: number;
+  y: number;
 }): EdgeTypeEnum[] {
   const position = getEdgeInfo({ width, height, scale, rotate });
   const edgeTypes: EdgeTypeEnum[] = [];
@@ -103,18 +114,23 @@ export function getStandardPosition({
   x,
   y,
 }: {
-  width: number,
-  height: number,
-  scale: number,
-  rotate: number,
-  x: number,
-  y: number,
+  width: number;
+  height: number;
+  scale: number;
+  rotate: number;
+  x: number;
+  y: number;
 }): {
-  x: number,
-  y: number,
-  scale: number,
+  x: number;
+  y: number;
+  scale: number;
 } {
-  const { edgeLeft, edgeRight, edgeTop, edgeBottom } = getEdgeInfo({ width, height, scale, rotate });
+  const { edgeLeft, edgeRight, edgeTop, edgeBottom } = getEdgeInfo({
+    width,
+    height,
+    scale,
+    rotate,
+  });
 
   if (x > edgeLeft) {
     x = edgeLeft;

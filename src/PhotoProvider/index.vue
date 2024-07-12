@@ -1,20 +1,10 @@
 <template>
   <!-- @slot 默认插槽 -->
   <slot />
-  <photo-slider
-    :visible="visible"
-    :index="index"
-    :should-transition="shouldTransition"
-    :toggle-overlay="!photoClosable"
-    :default-backdrop-opacity="defaultBackdropOpacity"
-    :items="items"
-    :loop="loop"
-    :download-method="downloadMethod"
-    @clickPhoto="handleClickPhoto"
-    @clickMask="handleClickMask"
-    @changeIndex="updateIndex"
-    @closeModal="handleHide"
-  />
+  <photo-slider :visible="visible" :index="index" :should-transition="shouldTransition" :toggle-overlay="!photoClosable"
+    :default-backdrop-opacity="defaultBackdropOpacity" :items="items" :loop="loop" :download-method="downloadMethod"
+    @clickPhoto="handleClickPhoto" @clickMask="handleClickMask" @onFullScreen="onFullScreen" @changeIndex="updateIndex"
+    @closeModal="handleHide" />
 </template>
 
 <script lang='ts'>
@@ -32,13 +22,13 @@ export default defineComponent({
     PhotoSlider
   },
   props: {
-    /**
-     * 图片点击是否关闭
-     */
-    mountEl: {
-      type: String,
-      default: "body",
-    },
+    // /**
+    //  * 图片点击是否关闭
+    //  */
+    // mountEl: {
+    //   type: String,
+    //   default: "body",
+    // },
     /**
      * 图片点击是否关闭
      */
@@ -82,8 +72,16 @@ export default defineComponent({
       default: null,
     }
   },
-  emits: ['indexChange', 'visibleChange'],
+  emits: ['indexChange', 'visibleChange', 'onFullScreen'],
   setup(_props, { emit }) {
+
+    // const current:any = getCurrentInstance()
+
+    // current.proxy.$mountel =_props.mountEl
+
+    const onFullScreen = (e: any) => {
+      emit('onFullScreen', e);
+    };
     const onIndexChange = () => {
       emit('indexChange', { index, items, visible });
     };
@@ -97,10 +95,11 @@ export default defineComponent({
     provide(updateItemKey, updateItem);
     provide(removeItemKey, removeItem);
     provide(handleShowKey, handleShow);
-    provide('mount-el', _props.mountEl);
+    // provide('mount-el', _props.mountEl);
 
     return {
       items,
+      onFullScreen,
       updateItem,
       removeItem,
       visible,
@@ -125,5 +124,4 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>

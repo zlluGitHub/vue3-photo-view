@@ -3,6 +3,7 @@
     <div v-if="photoVisible" class="PhotoSlider__Wrapper" :class="{
       'PhotoSlider__Clean': showAnimateType !== ShowAnimateEnum.None,
       'PhotoSlider__Hide': !overlayVisible,
+      'max': isMax,
     }">
       <div class="PhotoSlider__Backdrop" :class="{
         'PhotoSlider__fadeIn': showAnimateType === ShowAnimateEnum.In,
@@ -15,12 +16,14 @@
           {{ index + 1 }} / {{ items.length }}
         </div>
         <div class="PhotoSlider__BannerRight">
-          <download class="PhotoSlider__BannerIcon" @click="handleDownload" />
-          <rotate-left class="PhotoSlider__BannerIcon" @click="handleRotateLeft" />
-          <rotate-right class="PhotoSlider__BannerIcon" @click="handleRotateRight" />
-          <flip-horizontal class="PhotoSlider__BannerIcon" @click="toggleFlipHorizontal" />
-          <flip-vertical class="PhotoSlider__BannerIcon" @click="toggleFlipVertical" />
-          <close class="PhotoSlider__BannerIcon" @click="handleClickClose" />
+          <download class="PhotoSlider__BannerIcon download" @click="handleDownload" />
+          <rotate-left class="PhotoSlider__BannerIcon rotate-left" @click="handleRotateLeft" />
+          <rotate-right class="PhotoSlider__BannerIcon rotate-right" @click="handleRotateRight" />
+          <flip-horizontal class="PhotoSlider__BannerIcon flip-horizontal" @click="toggleFlipHorizontal" />
+          <flip-vertical class="PhotoSlider__BannerIcon flip-vertical" @click="toggleFlipVertical" />
+          <close class="PhotoSlider__BannerIcon close" @click="handleClickClose" />
+          <Minimum v-if="isMax" class="PhotoSlider__BannerIcon Minimum" @click="handleClickMax(false)" />
+          <Maximum v-else class="PhotoSlider__BannerIcon maximum" @click="handleClickMax(true)" />
         </div>
       </div>
       <div v-for="(item, currentIndex) in showItems" :key="item.key" class="PhotoSlider__PhotoBox" :style="{
@@ -48,7 +51,7 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, computed, toRefs, PropType, inject } from 'vue';
+import { defineComponent, computed, toRefs, PropType } from 'vue';
 import PhotoView from '../PhotoView/index.vue';
 import { horizontalOffset, minSwitchImageOffset } from '../constant';
 import useBodyEffect from './useBodyEffect';
@@ -56,6 +59,8 @@ import useInnerWidth from './useInnerWidth';
 import Close from './Close.vue';
 import ArrowLeft from './ArrowLeft.vue';
 import ArrowRight from './ArrowRight.vue';
+import Maximum from './Maximum.vue';
+import Minimum from './Minimum.vue';
 import RotateLeft from './RotateLeft.vue';
 import RotateRight from './RotateRight.vue';
 import FlipHorizontal from './FlipHorizontal.vue';
@@ -77,6 +82,8 @@ export default defineComponent({
     FlipHorizontal,
     FlipVertical,
     Download,
+    Maximum,
+    Minimum
   },
   props: {
     /**
@@ -136,7 +143,7 @@ export default defineComponent({
       default: null,
     }
   },
-  emits: ['clickPhoto', 'clickMask', 'changeIndex', 'closeModal'],
+  emits: ['clickPhoto', 'clickMask', 'changeIndex', 'closeModal', 'onFullScreen'],
   setup(props) {
     const { items, index, visible } = toRefs(props);
     const currentItem = computed<ItemType>(() => {
@@ -148,9 +155,10 @@ export default defineComponent({
       photoVisible, showAnimateType, originRect, onShowAnimateEnd
     } = useAnimationHandle(visible, currentItem);
     const { innerWidth } = useInnerWidth();
-
+    const win: any = window;
+    // const dom: any = document.querySelector(win?.$photo_mount_el);
     return {
-      mountEl: inject("global"),
+      mountEl: win?.$photo_mount_el || 'body',//inject("mount-el"),
       innerWidth,
       currentItem,
       photoVisible,
@@ -168,6 +176,7 @@ export default defineComponent({
       // 触摸相关
       touched: false,
       hasMove: false,
+      isMax: false,
       needTransition: false,
       clientX: 0,
       clientY: 0,
@@ -368,8 +377,14 @@ export default defineComponent({
     handleTouchVerticalEnd(clientY: number) {
       const offsetY = clientY - this.clientY;
 
-      if (Math.abs(offsetY) > window.innerHeight * 0.14) {
-        this.$emit('closeModal');
+      const win: any = window;
+      const dom: any = document.querySelector(win?.$photo_mount_el);
+
+      const innerHeight = dom?.offsetHeight || window.innerHeight
+
+      // console.log(1,dom,dom.offsetWidth,dom.offsetHeight);
+      if (Math.abs(offsetY) > innerHeight * 0.14) {
+        // this.$emit('closeModal');
       } else {
         this.resetBackdropOpacity();
       }
@@ -397,6 +412,11 @@ export default defineComponent({
     },
     handleClickClose() {
       this.$emit('closeModal');
+    },
+    handleClickMax(val: any) {
+      console.log(val);
+      this.$emit('onFullScreen', val);
+      this.isMax = val
     },
     // 对于中间的图片，当预览下一张时，getItemTransform 方法会做动画左移一个单位。showItems 列表会发生变化使 currentIndex 会从 1 变成 0，也相当于左移一个单位
     // 所以此时需要根据 virtualIndex 右移一个单位的来平衡其中一个左移即可
@@ -463,7 +483,7 @@ export default defineComponent({
 }
 
 .PhotoSlider__Wrapper {
-  position: fixed;
+  position: absolute;
   left: 0;
   top: 0;
   width: 100%;
@@ -471,6 +491,10 @@ export default defineComponent({
   overflow: hidden;
   z-index: 2000;
   user-select: none;
+
+  &.max {
+    position: fixed;
+  }
 
   .PhotoSlider__Backdrop {
     position: absolute;
@@ -500,8 +524,6 @@ export default defineComponent({
     align-items: center;
     width: 100%;
     height: 44px;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.5);
     transition: opacity 0.2s ease-out;
     z-index: 20;
 
@@ -522,6 +544,14 @@ export default defineComponent({
       justify-content: center;
       align-items: center;
       height: 100%;
+      font-size: 40px;
+
+      svg {
+        width: 1em;
+        height: 1em;
+        color: #333;
+        fill: #333;
+      }
 
       .PhotoSlider__BannerIcon {
         vertical-align: top;
@@ -571,6 +601,7 @@ export default defineComponent({
     height: 100px;
     opacity: 0.7;
     z-index: 20;
+   
     cursor: pointer;
     transition: opacity 0.2s linear;
     display: flex;
@@ -589,6 +620,7 @@ export default defineComponent({
       width: 24px;
       height: 24px;
       fill: white;
+      border-radius: 100%;
       background: rgba(0, 0, 0, 0.3);
     }
   }
@@ -604,8 +636,6 @@ export default defineComponent({
     line-height: 1.5;
     font-size: 14px;
     text-align: justify;
-    color: #ccc;
-    background-color: rgba(0, 0, 0, 0.5);
     transition: opacity 0.2s ease-out;
     z-index: 20;
 

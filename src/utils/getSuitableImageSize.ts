@@ -1,12 +1,26 @@
+// import { getCurrentInstance } from "vue";
+// const elId: any = inject("mount-el");
+
 export default function getSuitableImageSize(
   naturalWidth: number,
   naturalHeight: number,
-  rotate: number,
+  rotate: number
 ): {
   width: number;
   height: number;
 } {
+  const win: any = window;
+  const dom: any = document.querySelector(win?.$photo_mount_el);
+
   let { innerWidth, innerHeight } = window;
+  // console.log("elId", dom);
+
+  if (dom) {
+    innerWidth = dom.offsetWidth;
+    innerHeight = dom.offsetHeight;
+  }
+
+  // console.log(1, dom, dom.offsetWidth, dom.offsetHeight);
   // 如果图片不是水平，则调换宽高
   const isVertical = rotate % 180 !== 0;
   if (isVertical) {
@@ -37,6 +51,6 @@ export default function getSuitableImageSize(
 
   return {
     width,
-    height
+    height,
   };
 }

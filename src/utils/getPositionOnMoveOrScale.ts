@@ -1,3 +1,4 @@
+// import { inject } from "vue";
 /**
  * 获取移动或缩放之后的中心点
  */
@@ -7,20 +8,28 @@ export default function getPositionOnMoveOrScale({
   clientX,
   clientY,
   fromScale,
-  toScale
+  toScale,
 }: {
-  x: number,
-  y: number,
-  clientX: number,
-  clientY: number,
-  fromScale: number,
-  toScale: number
+  x: number;
+  y: number;
+  clientX: number;
+  clientY: number;
+  fromScale: number;
+  toScale: number;
 }): {
-  x: number,
-  y: number,
-  scale: number,
+  x: number;
+  y: number;
+  scale: number;
 } {
-  const { innerWidth, innerHeight } = window;
+  const win: any = window;
+  const dom: any = document.querySelector(win?.$photo_mount_el);
+  let { innerWidth, innerHeight } = window;
+
+  if (dom) {
+    innerWidth = dom.offsetWidth;
+    innerHeight = dom.offsetHeight;
+  }
+  // console.log(2,dom,dom.offsetWidth,dom.offsetHeight);
   // 缩放前的图片的中心坐标
   const imageCenterClientX = innerWidth / 2 + x;
   const imageCenterClientY = innerHeight / 2 + y;
