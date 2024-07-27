@@ -1,5 +1,6 @@
 import { EdgeTypeEnum } from "../types";
 // import { inject } from "vue";
+import store from "../utils/store";
 /**
  * 获取图片拖拽到边缘需要的值
  */
@@ -20,8 +21,10 @@ export function getEdgeInfo({
   edgeBottom: number;
 } {
 
-  const win: any = window;
-  const dom: any = document.querySelector(win?.$photo_mount_el);
+  // const win: any = window;
+  // const dom: any = document.querySelector(win?.$photo_mount_el);
+
+  const dom: any =  store.photoSliderRef;
 
   // 如果图片不是水平，则调换宽高
   const isVertical = rotate % 180 !== 0;

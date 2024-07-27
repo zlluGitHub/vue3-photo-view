@@ -1,11 +1,14 @@
 import { OriginRectType } from "../types";
 // import { inject } from "vue";
+import store from "../utils/store";
+
 export default function getAnimateOrigin(
   originRect: OriginRectType
 ): string | null {
   if (originRect) {
-    const win: any = window;
-    const dom: any = document.querySelector(win?.$photo_mount_el);
+    const dom: any = store.photoSliderRef;
+    // const win: any = window;
+    // const dom: any = document.querySelector(win?.$photo_mount_el);
 
     let { innerWidth, innerHeight } = window;
 

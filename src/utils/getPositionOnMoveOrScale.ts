@@ -2,6 +2,7 @@
 /**
  * 获取移动或缩放之后的中心点
  */
+import store from "../utils/store";
 export default function getPositionOnMoveOrScale({
   x,
   y,
@@ -21,8 +22,10 @@ export default function getPositionOnMoveOrScale({
   y: number;
   scale: number;
 } {
-  const win: any = window;
-  const dom: any = document.querySelector(win?.$photo_mount_el);
+  // const win: any = window;
+  // const dom: any = document.querySelector(win?.$photo_mount_el);
+
+  const dom: any =  store.photoSliderRef;
   let { innerWidth, innerHeight } = window;
 
   if (dom) {

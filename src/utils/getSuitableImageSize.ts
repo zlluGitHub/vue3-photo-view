@@ -1,6 +1,6 @@
 // import { getCurrentInstance } from "vue";
 // const elId: any = inject("mount-el");
-
+import store from "../utils/store";
 export default function getSuitableImageSize(
   naturalWidth: number,
   naturalHeight: number,
@@ -9,8 +9,10 @@ export default function getSuitableImageSize(
   width: number;
   height: number;
 } {
-  const win: any = window;
-  const dom: any = document.querySelector(win?.$photo_mount_el);
+  // const win: any = window;
+  // const dom: any = document.querySelector(win?.$photo_mount_el);
+
+  const dom: any =  store.photoSliderRef;
 
   let { innerWidth, innerHeight } = window;
   // console.log("elId", dom);

@@ -1,45 +1,104 @@
 <template>
-  <teleport :to="mountEl">
-    <div v-if="photoVisible" class="PhotoSlider__Wrapper" :class="{
-      'PhotoSlider__Clean': showAnimateType !== ShowAnimateEnum.None,
-      'PhotoSlider__Hide': !overlayVisible,
-      'max': isMax,
-    }">
-      <div class="PhotoSlider__Backdrop" :class="{
-        'PhotoSlider__fadeIn': showAnimateType === ShowAnimateEnum.In,
-        'PhotoSlider__fadeOut': showAnimateType === ShowAnimateEnum.Out
-      }" :style="{
-  background: `rgba(0, 0, 0, ${backdropOpacity})`,
-}" @animationend="onShowAnimateEnd(), resetBackdropOpacity()" />
+  <!-- <teleport :to="mountEl"> -->
+  <div class="photo-slider-wrapper" ref="photoSliderRef">
+    <div
+      v-if="photoVisible"
+      class="PhotoSlider__Wrapper"
+      :class="{
+        PhotoSlider__Clean: showAnimateType !== ShowAnimateEnum.None,
+        PhotoSlider__Hide: !overlayVisible,
+        max: isMax,
+      }"
+    >
+      <div
+        class="PhotoSlider__Backdrop"
+        :class="{
+          PhotoSlider__fadeIn: showAnimateType === ShowAnimateEnum.In,
+          PhotoSlider__fadeOut: showAnimateType === ShowAnimateEnum.Out,
+        }"
+        :style="{
+          background: `rgba(0, 0, 0, ${backdropOpacity})`,
+        }"
+        @animationend="onShowAnimateEnd(), resetBackdropOpacity()"
+      />
       <div class="PhotoSlider__BannerWrap">
         <div class="PhotoSlider__Counter">
           {{ index + 1 }} / {{ items.length }}
         </div>
         <div class="PhotoSlider__BannerRight">
-          <download class="PhotoSlider__BannerIcon download" @click="handleDownload" />
-          <rotate-left class="PhotoSlider__BannerIcon rotate-left" @click="handleRotateLeft" />
-          <rotate-right class="PhotoSlider__BannerIcon rotate-right" @click="handleRotateRight" />
-          <flip-horizontal class="PhotoSlider__BannerIcon flip-horizontal" @click="toggleFlipHorizontal" />
-          <flip-vertical class="PhotoSlider__BannerIcon flip-vertical" @click="toggleFlipVertical" />
-          <close class="PhotoSlider__BannerIcon close" @click="handleClickClose" />
-          <Minimum v-if="isMax" class="PhotoSlider__BannerIcon Minimum" @click="handleClickMax(false)" />
-          <Maximum v-else class="PhotoSlider__BannerIcon maximum" @click="handleClickMax(true)" />
+          <download
+            class="PhotoSlider__BannerIcon download"
+            @click="handleDownload"
+          />
+          <rotate-left
+            class="PhotoSlider__BannerIcon rotate-left"
+            @click="handleRotateLeft"
+          />
+          <rotate-right
+            class="PhotoSlider__BannerIcon rotate-right"
+            @click="handleRotateRight"
+          />
+          <flip-horizontal
+            class="PhotoSlider__BannerIcon flip-horizontal"
+            @click="toggleFlipHorizontal"
+          />
+          <flip-vertical
+            class="PhotoSlider__BannerIcon flip-vertical"
+            @click="toggleFlipVertical"
+          />
+          <close
+            class="PhotoSlider__BannerIcon close"
+            @click="handleClickClose"
+          />
+          <Minimum
+            v-if="isMax"
+            class="PhotoSlider__BannerIcon Minimum"
+            @click="handleClickMax(false)"
+          />
+          <Maximum
+            v-else
+            class="PhotoSlider__BannerIcon maximum"
+            @click="handleClickMax(true)"
+          />
         </div>
       </div>
-      <div v-for="(item, currentIndex) in showItems" :key="item.key" class="PhotoSlider__PhotoBox" :style="{
-        left: getItemLeft(currentIndex),
-        transition: getItemTransition(),
-        transform: getItemTransform()
-      }" @transitionend="resetNeedTransition" @click="handleClickMask">
-        <photo-view :ref="(val) => setPhotoViewRef(item.key, val)" :origin-rect="originRect"
-          :show-animate-type="showAnimateType" :src="item.src" @click.stop @touchStart="handleTouchStart"
-          @touchMove="handleTouchMove" @touchEnd="handleTouchEnd" @singleTap="handleSingleTap" />
+      <div
+        v-for="(item, currentIndex) in showItems"
+        :key="item.key"
+        class="PhotoSlider__PhotoBox"
+        :style="{
+          left: getItemLeft(currentIndex),
+          transition: getItemTransition(),
+          transform: getItemTransform(),
+        }"
+        @transitionend="resetNeedTransition"
+        @click="handleClickMask"
+      >
+        <photo-view
+          :ref="(val) => setPhotoViewRef(item.key, val)"
+          :origin-rect="originRect"
+          :show-animate-type="showAnimateType"
+          :src="item.src"
+          @click.stop
+          @touchStart="handleTouchStart"
+          @touchMove="handleTouchMove"
+          @touchEnd="handleTouchEnd"
+          @singleTap="handleSingleTap"
+        />
       </div>
       <template v-if="!isTouchDevice">
-        <div v-if="loop || index > 0" class="PhotoSlider__ArrowLeft" @click="handlePrevious">
+        <div
+          v-if="loop || index > 0"
+          class="PhotoSlider__ArrowLeft"
+          @click="handlePrevious"
+        >
           <arrow-left />
         </div>
-        <div v-if="loop || index < items.length - 1" class="PhotoSlider__ArrowRight" @click="handleNext">
+        <div
+          v-if="loop || index < items.length - 1"
+          class="PhotoSlider__ArrowRight"
+          @click="handleNext"
+        >
           <arrow-right />
         </div>
       </template>
@@ -47,31 +106,38 @@
         {{ currentItem.intro }}
       </div>
     </div>
-  </teleport>
+  </div>
+  <!-- </teleport> -->
 </template>
 
-<script lang='ts'>
-import { defineComponent, computed, toRefs, PropType } from 'vue';
-import PhotoView from '../PhotoView/index.vue';
-import { horizontalOffset, minSwitchImageOffset } from '../constant';
-import useBodyEffect from './useBodyEffect';
-import useInnerWidth from './useInnerWidth';
-import Close from './Close.vue';
-import ArrowLeft from './ArrowLeft.vue';
-import ArrowRight from './ArrowRight.vue';
-import Maximum from './Maximum.vue';
-import Minimum from './Minimum.vue';
-import RotateLeft from './RotateLeft.vue';
-import RotateRight from './RotateRight.vue';
-import FlipHorizontal from './FlipHorizontal.vue';
-import FlipVertical from './FlipVertical.vue';
-import Download from './Download.vue';
-import useAnimationHandle from './useAnimationHandle';
-import { ItemType, ShowAnimateEnum, TouchTypeEnum, EdgeTypeEnum } from '../types';
-import isTouchDevice from '../utils/isTouchDevice';
+<script lang="ts">
+import { defineComponent, computed, toRefs, PropType, ref } from "vue";
+import PhotoView from "../PhotoView/index.vue";
+import { horizontalOffset, minSwitchImageOffset } from "../constant";
+import useBodyEffect from "./useBodyEffect";
+import useInnerWidth from "./useInnerWidth";
+import Close from "./Close.vue";
+import ArrowLeft from "./ArrowLeft.vue";
+import ArrowRight from "./ArrowRight.vue";
+import Maximum from "./Maximum.vue";
+import Minimum from "./Minimum.vue";
+import RotateLeft from "./RotateLeft.vue";
+import RotateRight from "./RotateRight.vue";
+import FlipHorizontal from "./FlipHorizontal.vue";
+import FlipVertical from "./FlipVertical.vue";
+import Download from "./Download.vue";
+import useAnimationHandle from "./useAnimationHandle";
+import {
+  ItemType,
+  ShowAnimateEnum,
+  TouchTypeEnum,
+  EdgeTypeEnum,
+} from "../types";
+import isTouchDevice from "../utils/isTouchDevice";
+import store from "../utils/store";
 
 export default defineComponent({
-  name: 'PhotoSlider',
+  name: "PhotoSlider",
   components: {
     PhotoView,
     Close,
@@ -83,7 +149,7 @@ export default defineComponent({
     FlipVertical,
     Download,
     Maximum,
-    Minimum
+    Minimum,
   },
   props: {
     /**
@@ -141,25 +207,34 @@ export default defineComponent({
     downloadMethod: {
       type: Function as PropType<(item: ItemType) => void | null>,
       default: null,
-    }
+    },
   },
-  emits: ['clickPhoto', 'clickMask', 'changeIndex', 'closeModal', 'onFullScreen'],
+  emits: [
+    "clickPhoto",
+    "clickMask",
+    "changeIndex",
+    "closeModal",
+    "onFullScreen",
+  ],
   setup(props) {
     const { items, index, visible } = toRefs(props);
     const currentItem = computed<ItemType>(() => {
       return items.value[index.value] || {};
     });
 
+    const photoSliderRef = ref(null);
+    console.log(photoSliderRef.value);
+
     useBodyEffect(visible);
-    const {
-      photoVisible, showAnimateType, originRect, onShowAnimateEnd
-    } = useAnimationHandle(visible, currentItem);
-    const { innerWidth } = useInnerWidth();
-    const win: any = window;
+    const { photoVisible, showAnimateType, originRect, onShowAnimateEnd } =
+      useAnimationHandle(visible, currentItem);
+    // const { innerWidth } = useInnerWidth();
+    // const win: any = window;
     // const dom: any = document.querySelector(win?.$photo_mount_el);
     return {
-      mountEl: win?.$photo_mount_el || 'body',//inject("mount-el"),
-      innerWidth,
+      photoSliderRef,
+      // mountEl: win?.$photo_mount_el || "body", //inject("mount-el"),
+      // innerWidth,
       currentItem,
       photoVisible,
       showAnimateType,
@@ -167,8 +242,15 @@ export default defineComponent({
       onShowAnimateEnd,
     };
   },
+
+  mounted() {
+    store.photoSliderRef = this.photoSliderRef;
+    const { innerWidth } = useInnerWidth(this.photoSliderRef); 
+    this.innerWidth = innerWidth.value;
+  },
   data() {
     return {
+      innerWidth: 0,
       // 常量
       horizontalOffset,
       ShowAnimateEnum,
@@ -188,6 +270,8 @@ export default defineComponent({
       virtualIndex: 0,
       // photo-view 子组件
       photoViewRefs: {} as { [key: string]: InstanceType<typeof PhotoView> },
+
+      // photoSliderRef: null,
     };
   },
   computed: {
@@ -198,48 +282,51 @@ export default defineComponent({
         const connect = this.items.concat(this.items).concat(this.items);
         return connect.slice(len + this.index - 1, len + this.index + 2);
       }
-      return this.items.slice(Math.max(this.index - 1, 0), Math.min(this.index + 2, len));
-    }
+      return this.items.slice(
+        Math.max(this.index - 1, 0),
+        Math.min(this.index + 2, len)
+      );
+    },
   },
   created() {
-    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener("keydown", this.handleKeyDown);
   },
   beforeUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener("keydown", this.handleKeyDown);
   },
   beforeUpdate() {
     this.photoViewRefs = {};
   },
   methods: {
     defaultDownloadMethod(item: ItemType) {
-      const paths = item.src.split('/');
+      const paths = item.src.split("/");
       const name = paths[paths.length - 1];
 
       const img = new Image();
-      img.setAttribute('crossOrigin', 'Anonymous');
+      img.setAttribute("crossOrigin", "Anonymous");
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
         canvas.width = img.width;
         canvas.height = img.height;
         context?.drawImage(img, 0, 0, img.width, img.height);
-        canvas.toBlob(blob => {
+        canvas.toBlob((blob) => {
           if (blob) {
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.download = item.downloadName || name;
             a.href = url;
-            a.dispatchEvent(new MouseEvent('click'));
+            a.dispatchEvent(new MouseEvent("click"));
             // 释放 createObjectURL 创建的内存对象（否则以 blob:http 开头的 url 可以到浏览器访问，多次创建内存会不断增大）
             URL.revokeObjectURL(url);
           }
         });
       };
-      img.src = item.src + '?v=' + Date.now();
+      img.src = item.src + "?v=" + Date.now();
     },
     handleDownload() {
       const item = this.items[this.index];
-      if (typeof this.downloadMethod === 'function') {
+      if (typeof this.downloadMethod === "function") {
         this.downloadMethod(item);
       } else {
         this.defaultDownloadMethod(item);
@@ -264,23 +351,27 @@ export default defineComponent({
     handleKeyDown(e: KeyboardEvent) {
       if (this.visible) {
         switch (e.code) {
-          case 'ArrowLeft':
+          case "ArrowLeft":
             this.handlePrevious();
             break;
-          case 'ArrowRight':
+          case "ArrowRight":
             this.handleNext();
             break;
-          case 'Escape':
+          case "Escape":
             this.handleClickClose();
             break;
         }
       }
     },
-    handleSingleTap(_clientX: number, _clientY: number, e: MouseEvent | TouchEvent) {
+    handleSingleTap(
+      _clientX: number,
+      _clientY: number,
+      e: MouseEvent | TouchEvent
+    ) {
       if (this.toggleOverlay) {
         this.overlayVisible = !this.overlayVisible;
       }
-      this.$emit('clickPhoto', e);
+      this.$emit("clickPhoto", e);
     },
     handleTouchStart(clientX: number, clientY: number) {
       this.touched = true;
@@ -288,7 +379,13 @@ export default defineComponent({
       this.clientX = clientX;
       this.clientY = clientY;
     },
-    handleTouchMove(touchType: TouchTypeEnum, clientX: number, clientY: number, lastScale: number, edgeTypes: EdgeTypeEnum[]) {
+    handleTouchMove(
+      touchType: TouchTypeEnum,
+      clientX: number,
+      clientY: number,
+      lastScale: number,
+      edgeTypes: EdgeTypeEnum[]
+    ) {
       if (touchType === TouchTypeEnum.Scale && lastScale !== 1) {
         this.handleTouchScaleMove(clientX, edgeTypes);
       }
@@ -314,7 +411,8 @@ export default defineComponent({
       // 非循环模式下，第一张和最后一张超出时拖拽距离减半
       if (
         !this.loop &&
-        ((this.index === 0 && touchMoveX > 0) || (this.index === this.items.length - 1 && touchMoveX < 0))
+        ((this.index === 0 && touchMoveX > 0) ||
+          (this.index === this.items.length - 1 && touchMoveX < 0))
       ) {
         touchMoveX = touchMoveX / 2;
       }
@@ -325,14 +423,23 @@ export default defineComponent({
     handleTouchVerticalMove(clientX: number, clientY: number) {
       let touchMoveY = Math.abs(clientY - this.clientY);
       const opacity = Math.max(
-        Math.min(this.defaultBackdropOpacity, this.defaultBackdropOpacity - touchMoveY / 100 / 4),
+        Math.min(
+          this.defaultBackdropOpacity,
+          this.defaultBackdropOpacity - touchMoveY / 100 / 4
+        ),
         0
       );
 
       this.hasMove = clientX !== this.clientX || clientY !== this.clientY;
       this.backdropOpacity = opacity;
     },
-    handleTouchEnd(touchType: TouchTypeEnum, clientX: number, clientY: number, lastScale: number, edgeTypes: EdgeTypeEnum[]) {
+    handleTouchEnd(
+      touchType: TouchTypeEnum,
+      clientX: number,
+      clientY: number,
+      lastScale: number,
+      edgeTypes: EdgeTypeEnum[]
+    ) {
       if (touchType === TouchTypeEnum.Scale && lastScale !== 1) {
         this.handleTouchScaleEnd(clientX, edgeTypes);
       }
@@ -355,11 +462,17 @@ export default defineComponent({
     handleTouchScaleEnd(clientX: number, edgeTypes: EdgeTypeEnum[]) {
       const offsetX = clientX - this.clientX;
       // 下一张
-      if (offsetX < -minSwitchImageOffset && edgeTypes.includes(EdgeTypeEnum.Right)) {
+      if (
+        offsetX < -minSwitchImageOffset &&
+        edgeTypes.includes(EdgeTypeEnum.Right)
+      ) {
         this.handleNext();
       }
       // 上一张
-      if (offsetX > minSwitchImageOffset && edgeTypes.includes(EdgeTypeEnum.Left)) {
+      if (
+        offsetX > minSwitchImageOffset &&
+        edgeTypes.includes(EdgeTypeEnum.Left)
+      ) {
         this.handlePrevious();
       }
     },
@@ -376,11 +489,12 @@ export default defineComponent({
     },
     handleTouchVerticalEnd(clientY: number) {
       const offsetY = clientY - this.clientY;
+ 
+      const dom: any = this.photoSliderRef;
+      // const win: any = window;
+      // const dom: any = document.querySelector(win?.$photo_mount_el);
 
-      const win: any = window;
-      const dom: any = document.querySelector(win?.$photo_mount_el);
-
-      const innerHeight = dom?.offsetHeight || window.innerHeight
+      const innerHeight = dom?.offsetHeight || window.innerHeight;
 
       // console.log(1,dom,dom.offsetWidth,dom.offsetHeight);
       if (Math.abs(offsetY) > innerHeight * 0.14) {
@@ -398,25 +512,25 @@ export default defineComponent({
     handlePrevious() {
       const len = this.items.length;
       if (!this.loop && this.index === 0) return;
-      this.$emit('changeIndex', (this.index + len - 1) % len);
+      this.$emit("changeIndex", (this.index + len - 1) % len);
       this.virtualIndex -= 1;
     },
     handleNext() {
       const len = this.items.length;
       if (!this.loop && this.index === len - 1) return;
-      this.$emit('changeIndex', (this.index + 1) % len);
+      this.$emit("changeIndex", (this.index + 1) % len);
       this.virtualIndex += 1;
     },
     handleClickMask(e: MouseEvent | TouchEvent) {
-      this.$emit('clickMask', e);
+      this.$emit("clickMask", e);
     },
     handleClickClose() {
-      this.$emit('closeModal');
+      this.$emit("closeModal");
     },
     handleClickMax(val: any) {
       console.log(val);
-      this.$emit('onFullScreen', val);
-      this.isMax = val
+      this.$emit("onFullScreen", val);
+      this.isMax = val;
     },
     // 对于中间的图片，当预览下一张时，getItemTransform 方法会做动画左移一个单位。showItems 列表会发生变化使 currentIndex 会从 1 变成 0，也相当于左移一个单位
     // 所以此时需要根据 virtualIndex 右移一个单位的来平衡其中一个左移即可
@@ -429,7 +543,7 @@ export default defineComponent({
       return `${(this.innerWidth + this.horizontalOffset) * index}px`;
     },
     getItemTransition() {
-      const transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+      const transition = "transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)";
       if (this.needTransition) {
         return transition;
       }
@@ -439,13 +553,20 @@ export default defineComponent({
       return this.shouldTransition ? transition : undefined;
     },
     getItemTransform() {
-      return `translate3d(${-(this.innerWidth + this.horizontalOffset) * this.virtualIndex + this.touchMoveX}px, 0px, 0px)`;
-    }
-  }
+      return `translate3d(${
+        -(this.innerWidth + this.horizontalOffset) * this.virtualIndex +
+        this.touchMoveX
+      }px, 0px, 0px)`;
+    },
+  },
 });
 </script>
 
 <style lang="scss">
+.photo-slider-wrapper {
+  height: 100%;
+  width: 100%;
+}
 @keyframes PhotoView__fade {
   from {
     opacity: 0;
@@ -457,7 +578,6 @@ export default defineComponent({
 }
 
 .PhotoSlider__Wrapper.PhotoSlider__Clean {
-
   .PhotoSlider__BannerWrap,
   .PhotoSlider__ArrowLeft,
   .PhotoSlider__ArrowRight,
@@ -473,7 +593,6 @@ export default defineComponent({
 }
 
 .PhotoSlider__Wrapper.PhotoSlider__Hide {
-
   .PhotoSlider__BannerWrap,
   .PhotoSlider__ArrowLeft,
   .PhotoSlider__ArrowRight,
@@ -601,7 +720,7 @@ export default defineComponent({
     height: 100px;
     opacity: 0.7;
     z-index: 20;
-   
+
     cursor: pointer;
     transition: opacity 0.2s linear;
     display: flex;
